@@ -18,5 +18,5 @@ Este projeto consiste em uma API CRUD para gerenciamento de tarefas, utilizando 
 
 ### 1. Clonar e acessar o projeto
 ```bash
-git clone <url-do-repositorio>
+git clone <https://github.com/caioegc/projeto-devops.git>
 cd projeto-devops
