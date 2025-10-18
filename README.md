@@ -2,12 +2,37 @@
 
 Este projeto consiste em uma API CRUD para gerenciamento de tarefas, utilizando Flask (Python) e PostgreSQL, containerizada com Docker e Docker Compose.
 
-## 🚀 Tecnologias Utilizadas
 
-- **Python 3.11** com Flask
-- **PostgreSQL 15**
-- **Docker** e **Docker Compose**
-- **Multi-stage builds** com Alpine Linux
+## ⚙️ Tecnologias Utilizadas
+
+### 🐳 Infraestrutura & DevOps
+
+ Tecnologia                                                                                                              | Descrição                                                                            |
+| :---------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge\&logo=docker\&logoColor=white)                 | Containerização da aplicação e banco de dados para ambiente isolado e consistente.   |
+| ![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge\&logo=docker\&logoColor=white) | Orquestração de multi-containers para gerenciar aplicação e banco simultaneamente.   |
+| ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge\&logo=postgresql\&logoColor=white)     | Banco de dados relacional para persistência dos dados com usuário dedicado e seguro. |
+
+---
+
+### 🐍 Back-end & API
+
+|Tecnologia                                                                                                      | Descrição                                                                           |
+| :-------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------- |
+| ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge\&logo=python\&logoColor=white)         | Linguagem principal usada para implementar a API RESTful e lógica de negócio.       |
+| ![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge\&logo=flask\&logoColor=white)            | Framework web leve para criação da API com endpoints CRUD e tratamento de requests. |
+| ![Psycopg2](https://img.shields.io/badge/Psycopg2-4169E1?style=for-the-badge\&logo=postgresql\&logoColor=white) | Driver PostgreSQL para Python, permitindo conexão segura com o banco de dados.      |
+
+---
+
+### 🔒 Segurança & Boas Práticas
+
+ Tecnologia                                                                                                                     | Descrição                                                                       |
+| :----------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| ![Multi-stage Build](https://img.shields.io/badge/Multi--stage_Build-2496ED?style=for-the-badge\&logo=docker\&logoColor=white) | Builds otimizados com imagens Alpine Linux para tamanho reduzido e segurança.   |
+| ![Environment Variables](https://img.shields.io/badge/Environment_Variables-4A90E2?style=for-the-badge)                        | Configurações sensíveis isoladas em variáveis de ambiente para maior segurança. |
+| ![Non-root User](https://img.shields.io/badge/Non--root_User-FF6B6B?style=for-the-badge)                                       | Aplicação executa com usuário dedicado, seguindo princípio do menor privilégio. |
+
 
 ## 📋 Pré-requisitos
 
