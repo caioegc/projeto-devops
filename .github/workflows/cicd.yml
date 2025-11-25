@@ -56,9 +56,9 @@ jobs:
 
   # Job 2: Build e push da imagem Docker (só executa se os testes passarem)
   build-and-push:
-    needs: test  # Depende do job de testes
+    needs: test  
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # Só executa na branch main
+    if: github.ref == 'refs/heads/main'  
     
     steps:
     - name: Checkout code
@@ -80,15 +80,15 @@ jobs:
         push: true
         tags: |
           ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
-          ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}  # Tag com SHA do commit
+          ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}  
         cache-from: type=registry,ref=${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
         cache-to: type=inline
 
   # Job 3: Deploy automático no servidor (só executa se o build for bem-sucedido)
   deploy:
-    needs: build-and-push  # Depende do job de build
+    needs: build-and-push  
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # Só executa na branch main
+    if: github.ref == 'refs/heads/main'  
     
     steps:
     - name: Checkout code
