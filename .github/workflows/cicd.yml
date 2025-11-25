@@ -1,17 +1,21 @@
 name: CI/CD Pipeline
 
+# Trigger: executa a cada push na branch main
 on:
   push:
     branches: [ main ]
 
+# Variáveis de ambiente globais
 env:
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   IMAGE_NAME: flask-tasks-app
 
 jobs:
+  # Job 1: Execução dos testes unitários
   test:
     runs-on: ubuntu-latest
     
+    # Serviço do PostgreSQL para testes de integração
     services:
       postgres:
         image: postgres:15-alpine
@@ -43,17 +47,18 @@ jobs:
 
     - name: Wait for PostgreSQL
       run: |
-        sleep 10
+        sleep 10  # Aguarda o PostgreSQL inicializar
 
     - name: Run tests
       run: |
         cd app
-        python -m pytest test_app.py -v
+        python -m pytest test_app.py -v  # Executa todos os testes com verbose
 
+  # Job 2: Build e push da imagem Docker (só executa se os testes passarem)
   build-and-push:
-    needs: test
+    needs: test  # Depende do job de testes
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'  # Só executa na branch main
     
     steps:
     - name: Checkout code
@@ -75,14 +80,15 @@ jobs:
         push: true
         tags: |
           ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
-          ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}  # Tag com SHA do commit
         cache-from: type=registry,ref=${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
         cache-to: type=inline
 
+  # Job 3: Deploy automático no servidor (só executa se o build for bem-sucedido)
   deploy:
-    needs: build-and-push
+    needs: build-and-push  # Depende do job de build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'  # Só executa na branch main
     
     steps:
     - name: Checkout code
@@ -97,16 +103,16 @@ jobs:
         script: |
           echo "=== Iniciando Deploy ==="
           cd /opt/projeto-devops
-          git pull origin main
+          git pull origin main  # Atualiza o código no servidor
           
           echo "=== Fazendo deploy da nova imagem ==="
           export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-          export IMAGE_TAG=${{ github.sha }}
-          docker-compose -f docker-compose.prod.yml pull app
-          docker-compose -f docker-compose.prod.yml down
-          docker-compose -f docker-compose.prod.yml up -d
+          export IMAGE_TAG=${{ github.sha }}  # Usa o SHA do commit como tag
+          docker-compose -f docker-compose.prod.yml pull app  # Puxa a nova imagem
+          docker-compose -f docker-compose.prod.yml down      # Para os containers atuais
+          docker-compose -f docker-compose.prod.yml up -d     # Sobe os novos containers
           
           echo "=== Verificando containers ==="
-          docker ps
+          docker ps  # Mostra os containers em execução
           
           echo "=== Deploy concluído ==="
