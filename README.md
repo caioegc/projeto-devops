@@ -183,19 +183,6 @@ POSTGRES_USER: app_user
 
 POSTGRES_PASSWORD: app_password
 
-### Arquivos de exemplo de variáveis de ambiente
-Há arquivos de exemplo com variáveis necessárias para facilitar a configuração. Copie-os antes de rodar os containers e não os versione (já estão no `.gitignore`):
-
-- `./.env.example` → variáveis do PostgreSQL (root do projeto)
-- `./app/.env.example` → variáveis da aplicação (ex.: `DATABASE_URL`, `FLASK_ENV`)
-
-Exemplo para criar os arquivos reais:
-
-```powershell
-copy .env.example .env
-copy app\.env.example app\.env
-```
-
 ## 🛑 Parar os containers
 
 ```powershell
@@ -207,7 +194,7 @@ docker compose down
 projeto-devops/
 ├── app/
 │   ├── app.py          # Aplicação Flask
-│   └── .env.example    # Exemplo de variáveis de ambiente da aplicação
+│   └── .env            # Variáveis de ambiente
 ├── docker/
 │   └── init.sql        # Script de inicialização do DB
 ├── .gitignore
@@ -231,3 +218,36 @@ docker compose exec db pg_isready
 docker compose down -v
 docker compose up --build
 ```
+
+## CI/CD Pipeline
+
+[![CI/CD Status](https://github.com/caioegc/projeto-devops/actions/workflows/cicd.yml/badge.svg)](https://github.com/caioegc/projeto-devops/actions)
+
+### Fluxo do Pipeline:
+1. **Testes**: A cada push na branch main, os testes unitários são executados
+2. **Build**: Se os testes passarem, uma nova imagem Docker é construída
+3. **Push**: A imagem é enviada para o Docker Hub com tags `latest` e `commit-SHA`
+4. **Deploy**: A aplicação é automaticamente atualizada no servidor de produção
+
+### Secrets Necessários:
+- `DOCKERHUB_USERNAME`: Usuário do Docker Hub
+- `DOCKERHUB_TOKEN`: Token de acesso do Docker Hub  
+- `SERVER_IP`: IP do servidor de produção
+- `SERVER_USER`: Usuário SSH do servidor
+- `SERVER_PASSWORD`: Senha do servidor
+
+### Configuração Manual no Servidor:
+```bash
+git clone <repo-url> /opt/projeto-devops
+cd /opt/projeto-devops
+```
+### Configuração Manual no Servidor:
+```bash
+git clone https://github.com/caioegc/projeto-devops.git /opt/projeto-devops
+cd /opt/projeto-devops
+```
+# Criar arquivo .env com variáveis de produção
+cat > .env << EOF
+DATABASE_URL=postgresql://app_user:app_password@db:5432/tasks_db
+FLASK_ENV=production
+EOF
