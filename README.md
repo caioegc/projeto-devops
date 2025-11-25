@@ -1,4 +1,4 @@
-# Projeto DevOps - API de Tarefas com Docker
+# Projeto DevOps - API de Tarefas com Docker a
 
 Este projeto consiste em uma API CRUD para gerenciamento de tarefas, utilizando Flask (Python) e PostgreSQL, containerizada com Docker e Docker Compose.
 
