@@ -62,7 +62,14 @@ docker compose ps
 ### 4. Acessar a aplicação
 
 A API estará disponível em: http://localhost:5000
+--- 
 
+### Testar:
+Testar listagem de tarefas (para ver tudo funcionando)
+Usando curl:
+```bash
+curl http://localhost:5000/tasks
+```
 
 ## 📊 Endpoints da API
 
