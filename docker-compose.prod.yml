@@ -1,0 +1,39 @@
+services:
+  # Serviço da aplicação Flask
+  app:
+    image: ${DOCKERHUB_USERNAME}/flask-tasks-app:${IMAGE_TAG:-latest}
+    container_name: flask_app_prod
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=postgresql://app_user:app_password@db:5432/tasks_db
+      - FLASK_ENV=production
+    depends_on:
+      - db
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  # Serviço do banco de dados PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db_prod
+    environment:
+      - POSTGRES_DB=tasks_db
+      - POSTGRES_USER=app_user
+      - POSTGRES_PASSWORD=app_password
+    networks:
+      - app_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+# Rede customizada para comunicação isolada
+networks:
+  app_network:
+    driver: bridge
+
+# Volume para persistência dos dados do PostgreSQL
+volumes:
+  postgres_data:
