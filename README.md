@@ -183,6 +183,19 @@ POSTGRES_USER: app_user
 
 POSTGRES_PASSWORD: app_password
 
+### Arquivos de exemplo de variáveis de ambiente
+Há arquivos de exemplo com variáveis necessárias para facilitar a configuração. Copie-os antes de rodar os containers e não os versione (já estão no `.gitignore`):
+
+- `./.env.example` → variáveis do PostgreSQL (root do projeto)
+- `./app/.env.example` → variáveis da aplicação (ex.: `DATABASE_URL`, `FLASK_ENV`)
+
+Exemplo para criar os arquivos reais:
+
+```powershell
+copy .env.example .env
+copy app\.env.example app\.env
+```
+
 ## 🛑 Parar os containers
 
 ```powershell
@@ -194,7 +207,7 @@ docker compose down
 projeto-devops/
 ├── app/
 │   ├── app.py          # Aplicação Flask
-│   └── .env            # Variáveis de ambiente
+│   └── .env.example    # Exemplo de variáveis de ambiente da aplicação
 ├── docker/
 │   └── init.sql        # Script de inicialização do DB
 ├── .gitignore
