@@ -219,6 +219,12 @@ docker compose down -v
 docker compose up --build
 ```
 
+### 4. Acessar a aplicação
+A aplicação também está rodando no servidor DigitalOcean, disponível publicamente no IP do droplet.
+
+- Localmente (Docker): http://localhost:5000  
+- No servidor DigitalOcean: http://143.198.31.87:5000
+
 ## CI/CD Pipeline
 
 [![CI/CD Status](https://github.com/caioegc/projeto-devops/actions/workflows/cicd.yml/badge.svg)](https://github.com/caioegc/projeto-devops/actions)
