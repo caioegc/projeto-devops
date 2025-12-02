@@ -7,7 +7,7 @@ Este projeto consiste em uma API CRUD para gerenciamento de tarefas, utilizando 
 
 ### 🐳 Infraestrutura & DevOps
 
- Tecnologia                                                                                                              | Descrição                                                                            |
+ Tecnologia:                                                                                                              | Descrição                                                                            |
 | :---------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------- |
 | ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge\&logo=docker\&logoColor=white)                 | Containerização da aplicação e banco de dados para ambiente isolado e consistente.   |
 | ![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge\&logo=docker\&logoColor=white) | Orquestração de multi-containers para gerenciar aplicação e banco simultaneamente.   |
