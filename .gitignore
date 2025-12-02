@@ -6,16 +6,9 @@ app/.env
 __pycache__/
 
 # Terraform
-*.tfstate
-*.tfstate.*
-.terraform/
-terraform.tfvars
-*.tfvars
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/terraform.tfvars
+**/*.tfvars
 terraform.exe
-# Terraform
-terraform/.terraform/
-terraform/*.tfstate
-terraform/*.tfstate.*
-terraform/terraform.tfvars
-terraform/*.tfvars
-terraform/terraform.exe
