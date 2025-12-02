@@ -54,7 +54,70 @@ jobs:
         cd app
         python -m pytest test_app.py -v  # Executa todos os testes com verbose
 
-  # Job 2: Build e push da imagem Docker (só executa se os testes passarem)
+  # Job 2: Provisionar Infraestrutura com Terraform (PARTE NOVA)
+  provision-infra:
+    needs: test  # Espera os testes passarem
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Debug - Início do job provision-infra
+      run: echo "🚀 provision-infra iniciado em $(date)"
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.14.0
+
+    - name: Configure AWS Credentials for DigitalOcean Spaces
+      run: |
+        echo "AWS_ACCESS_KEY_ID=${{ secrets.SPACES_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+        echo "AWS_SECRET_ACCESS_KEY=${{ secrets.SPACES_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+
+    - name: Terraform Init
+      working-directory: ./terraform
+      run: terraform init
+
+    - name: Terraform Plan (Debug)
+      working-directory: ./terraform
+      run: terraform plan -no-color
+      env:
+        TF_VAR_do_token: ${{ secrets.DO_TOKEN }}
+
+    - name: Terraform Apply
+      working-directory: ./terraform
+      run: terraform apply -auto-approve
+      env:
+        TF_VAR_do_token: ${{ secrets.DO_TOKEN }}
+
+    - name: Get Droplet IP
+      id: terraform-output
+      working-directory: ./terraform
+      run: |
+        terraform output -raw droplet_ip > ip.txt
+        IP=$(cat ip.txt)
+        echo "droplet_ip=$IP" >> $GITHUB_OUTPUT
+        echo "📡 IP obtido do Terraform: $IP"
+
+    - name: Save IP for next job
+      run: |
+        echo "${{ steps.terraform-output.outputs.droplet_ip }}" > droplet_ip.txt
+        echo "📁 IP salvo em droplet_ip.txt: $(cat droplet_ip.txt)"
+
+    - name: Upload IP as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: droplet-ip
+        path: droplet_ip.txt
+        retention-days: 1
+
+    - name: Debug - Fim do job provision-infra
+      run: echo "✅ provision-infra concluído em $(date)"
+
+  # Job 3: Build e push da imagem Docker (só executa se os testes passarem)
   build-and-push:
     needs: test  
     runs-on: ubuntu-latest
@@ -84,9 +147,9 @@ jobs:
         cache-from: type=registry,ref=${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
         cache-to: type=inline
 
-  # Job 3: Deploy automático no servidor (só executa se o build for bem-sucedido)
+  # Job 4: Deploy automático no servidor (AGORA USA IP DO TERRAFORM)
   deploy:
-    needs: build-and-push  
+    needs: [build-and-push, provision-infra]  # Depende dos dois jobs
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'  
     
@@ -94,25 +157,55 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Deploy to server
-      uses: appleboy/ssh-action@v0.1.6
+    - name: Download IP artifact
+      uses: actions/download-artifact@v4
       with:
-        host: ${{ secrets.SERVER_IP }}
-        username: ${{ secrets.SERVER_USER }}
-        password: ${{ secrets.SERVER_PASSWORD }}
-        script: |
-          echo "=== Iniciando Deploy ==="
+        name: droplet-ip
+        # Se não encontrar o artifact, falha explicitamente
+        if-no-found-files: error
+
+    - name: Read Droplet IP
+      id: ip
+      run: |
+        IP=$(cat droplet_ip.txt)
+        if [ -z "$IP" ]; then
+          echo "❌ ERRO: IP não encontrado no artifact droplet-ip"
+          exit 1
+        fi
+        echo "DROPLET_IP=$IP" >> $GITHUB_ENV
+        echo "📡 Conectando ao servidor: $IP"
+
+    - name: Setup SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ env.DROPLET_IP }} >> ~/.ssh/known_hosts
+
+    - name: Deploy to server
+      run: |
+        echo "=== Iniciando Deploy no IP: ${{ env.DROPLET_IP }} ==="
+        
+        # Copia arquivos necessários
+        scp -i ~/.ssh/id_rsa docker-compose.prod.yml root@${{ env.DROPLET_IP }}:/opt/projeto-devops/
+        scp -i ~/.ssh/id_rsa .env.example root@${{ env.DROPLET_IP }}:/opt/projeto-devops/.env 2>/dev/null || true
+        
+        # Executa deploy via SSH
+        ssh -i ~/.ssh/id_rsa root@${{ env.DROPLET_IP }} "
+          echo '=== Atualizando código ==='
           cd /opt/projeto-devops
-          git pull origin main  # Atualiza o código no servidor
+          git pull origin main 2>/dev/null || git clone https://github.com/caioegc/projeto-devops.git /opt/projeto-devops
           
-          echo "=== Fazendo deploy da nova imagem ==="
+          echo '=== Fazendo deploy da nova imagem ==='
           export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-          export IMAGE_TAG=${{ github.sha }}  # Usa o SHA do commit como tag
-          docker-compose -f docker-compose.prod.yml pull app  # Puxa a nova imagem
-          docker-compose -f docker-compose.prod.yml down      # Para os containers atuais
-          docker-compose -f docker-compose.prod.yml up -d     # Sobe os novos containers
+          export IMAGE_TAG=${{ github.sha }}
           
-          echo "=== Verificando containers ==="
-          docker ps  # Mostra os containers em execução
+          docker-compose -f docker-compose.prod.yml pull app
+          docker-compose -f docker-compose.prod.yml down
+          docker-compose -f docker-compose.prod.yml up -d
           
-          echo "=== Deploy concluído ==="
+          echo '=== Verificando containers ==='
+          docker ps
+          
+          echo '=== Deploy concluído ==='
+        "
