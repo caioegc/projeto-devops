@@ -97,8 +97,12 @@ jobs:
       id: terraform-output
       working-directory: ./terraform
       run: |
-        terraform output -raw droplet_ip > ip.txt
-        IP=$(cat ip.txt)
+        # Captura apenas o IP, ignorando logs de debug
+        IP=$(terraform output -raw -no-color droplet_ip 2>&1 | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$')
+        if [ -z "$IP" ]; then
+          echo "❌ Falha ao obter IP do Terraform"
+          exit 1
+        fi
         echo "droplet_ip=$IP" >> $GITHUB_OUTPUT
         echo "📡 IP obtido do Terraform: $IP"
 

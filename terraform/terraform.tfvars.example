@@ -1,0 +1,4 @@
+do_token      = "dop_v1_6248820c0a7d23edc2462f54172ff9f45caf8248e5ec580fc53e975f89d568b1"
+ssh_key_name  = "ifal-chave"
+region        = "nyc3"
+droplet_size  = "s-1vcpu-1gb"
