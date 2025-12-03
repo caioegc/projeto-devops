@@ -178,7 +178,7 @@ terraform apply -auto-approve
 - URL: `http://localhost:5000`
 - Porta: `5000`
 
-#### 🌐 **Em Produção (Atividade 3 - Manual)**:
+#### 🌐 **Em Produção (Atividade 3 - Manual - atualmente esse localhost não está funcionando apenas o da atividade 4 funciona.)**:
 - URL: `http://143.198.31.87:5000`
 - Porta: `5000`
 
