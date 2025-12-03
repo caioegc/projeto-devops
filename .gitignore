@@ -1,9 +1,13 @@
+# IntelliJ / Idea
+.idea/
+
 # Environment files
 .env
 app/.env
 
 # Python cache
 __pycache__/
+*.pyc
 
 # Terraform
 **/.terraform/
